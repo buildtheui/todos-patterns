@@ -1,0 +1,18 @@
+{
+  "name": "todos-patterns",
+  "version": "1.0.0",
+  "description": "Todo lists using different patterns",
+  "repository": "git@github.com:buildtheui/todos-patterns.git",
+  "author": "Fabián Monsalve <fabtics@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "vite": "^5.0.0"
+  }
+}

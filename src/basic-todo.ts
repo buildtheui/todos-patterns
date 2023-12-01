@@ -1,113 +1,90 @@
-const listeners: [
-  evType: keyof HTMLElementEventMap,
-  listener: (ev: any) => void
-][] = [];
-
 export const init = () => {
-  const bodyEl: HTMLDivElement = document.getElementById(
-    "body"
-  ) as HTMLDivElement;
+  const bodyEl = document.getElementById("body") as HTMLDivElement;
 
-  const todoInputEl: HTMLInputElement = document.createElement(
-    "Input"
-  ) as HTMLInputElement;
+  const todoInputEl = document.createElement("input") as HTMLInputElement;
   todoInputEl.type = "text";
   todoInputEl.placeholder = "Add todo";
   todoInputEl.classList.add("todo-add__input");
 
-  const todoListEl: HTMLUListElement = document.createElement("ul");
+  const todoListEl = document.createElement("ul");
   todoListEl.classList.add("todo-list");
 
-  const appendTodo = (todo: string) => {
-    const liEl: HTMLLIElement = document.createElement("li");
-    const actionsEl: HTMLDivElement = document.createElement("div");
+  const appendTodo = (todoText: string) => {
+    const todoItemEl = document.createElement("li");
+    const actionsEl = document.createElement("div");
     actionsEl.classList.add("actions");
 
-    liEl.append(todo);
-    liEl.append(actionsEl);
-    todoListEl.append(liEl);
-    addCheckButton(liEl, actionsEl);
-    addDeleteButton(liEl, actionsEl);
-    addUpdate(liEl);
+    todoItemEl.textContent = todoText;
+    todoItemEl.append(actionsEl);
+    todoListEl.append(todoItemEl);
+    addCheckButton(todoItemEl, actionsEl);
+    addDeleteButton(todoItemEl, actionsEl);
+    addUpdate(todoItemEl);
   };
 
-  const addCheckButton = (liEl: HTMLLIElement, actionsEl: HTMLDivElement) => {
+  const addCheckButton = (
+    todoItemEl: HTMLLIElement,
+    actionsEl: HTMLDivElement
+  ) => {
     const checkBtn = document.createElement("button");
-    checkBtn.innerHTML = "&check;";
+    checkBtn.textContent = "✔";
     actionsEl.append(checkBtn);
 
-    const onCheck = (ev: MouseEvent) => {
+    checkBtn.addEventListener("click", (ev: MouseEvent) => {
       ev.stopPropagation();
-      liEl.classList.toggle("line-through");
-    };
-
-    listeners.push(["click", onCheck]);
-    checkBtn.addEventListener("click", onCheck);
+      todoItemEl.classList.toggle("line-through");
+    });
   };
 
-  const addDeleteButton = (liEl: HTMLLIElement, actionsEl: HTMLDivElement) => {
-    const checkBtn = document.createElement("button");
-    checkBtn.style.backgroundColor = "red";
-    checkBtn.innerHTML = "x";
-    actionsEl.append(checkBtn);
+  const addDeleteButton = (
+    todoItemEl: HTMLLIElement,
+    actionsEl: HTMLDivElement
+  ) => {
+    const deleteBtn = document.createElement("button");
+    deleteBtn.style.backgroundColor = "red";
+    deleteBtn.textContent = "x";
+    actionsEl.append(deleteBtn);
 
-    const onDelete = (ev: MouseEvent) => {
+    deleteBtn.addEventListener("click", (ev: MouseEvent) => {
       ev.stopPropagation();
-      liEl.remove();
-    };
-
-    listeners.push(["click", onDelete]);
-    checkBtn.addEventListener("click", onDelete);
+      todoItemEl.remove();
+    });
   };
 
-  const addUpdate = (liEl: HTMLLIElement) => {
+  const addUpdate = (todoItemEl: HTMLLIElement) => {
     const updateInput: HTMLInputElement = document.createElement("input");
     updateInput.placeholder = "Update TODO";
 
-    const onUpdateText = (ev: KeyboardEvent) => {
+    updateInput.addEventListener("keydown", (ev: KeyboardEvent) => {
       ev.stopPropagation();
 
       if (ev.key === "Enter") {
         const newText = (ev.target as HTMLInputElement).value;
-        const [_input, ...actions] = liEl.childNodes;
-        liEl.replaceChildren(newText, ...actions);
+        const [_input, ...actions] = todoItemEl.childNodes;
+        todoItemEl.replaceChildren(newText, ...actions);
       }
-    };
+    });
 
-    const onClickUpdate = (ev: MouseEvent) => {
+    todoItemEl.addEventListener("click", (ev: MouseEvent) => {
       ev.stopPropagation();
 
       if ((ev.target as HTMLLIElement).nodeName === "INPUT") {
         return;
       }
 
-      const [text, ...actions] = liEl.childNodes;
+      // Replace the text of the todo item with the update input
+      const [text, ...actions] = todoItemEl.childNodes;
       updateInput.value = text.textContent as string;
-      liEl.replaceChildren(updateInput, ...actions);
-    };
-
-    listeners.push(["click", onClickUpdate]);
-    listeners.push(["keydown", onUpdateText]);
-
-    liEl.addEventListener("click", onClickUpdate);
-    updateInput.addEventListener("keydown", onUpdateText);
+      todoItemEl.replaceChildren(updateInput, ...actions);
+    });
   };
 
-  const todoAddListener = (ev: KeyboardEvent) => {
+  todoInputEl.addEventListener("keydown", (ev: KeyboardEvent) => {
     if (ev.key === "Enter") {
       appendTodo((ev.target as HTMLInputElement).value);
       (ev.target as HTMLInputElement).value = "";
     }
-  };
-
-  listeners.push(["keydown", todoAddListener]);
-  todoInputEl.addEventListener("keydown", todoAddListener);
+  });
 
   bodyEl.append(todoInputEl, todoListEl);
-};
-
-export const cleanup = () => {
-  listeners.forEach(([evType, listener]) =>
-    document.removeEventListener(evType, listener)
-  );
 };

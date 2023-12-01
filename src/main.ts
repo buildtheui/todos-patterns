@@ -1,8 +1,8 @@
-import { init as basicInit, cleanup as basicClean } from "./basic-todo";
+import { init as basicInit } from "./basic-todo";
 import "./style.css";
 
 const todos = {
-  basic: [basicInit, basicClean],
+  basic: [basicInit],
 };
 
 const appEl: HTMLDivElement = document.getElementById("app") as HTMLDivElement;
@@ -27,9 +27,8 @@ const menuEl: HTMLDivElement = document.createElement("div");
 menuEl.innerHTML = MenuHTML;
 appEl.append(menuEl);
 
-const back = document.getElementById("back");
-const menu = document.getElementById("menu");
-const body = document.getElementById("body");
+const back = document.querySelector("#back");
+const menu = document.querySelector("#menu");
 
 const onMenuClick = (ev: MouseEvent) => {
   ev.preventDefault();
@@ -44,7 +43,15 @@ const backToMenu = (ev: MouseEvent) => {
 
   menu?.classList.remove("hidden");
   back?.classList.add("hidden");
-  body?.replaceChildren();
+  cleanup();
+};
+
+const cleanup = () => {
+  // Remove all event listeners from the document
+  const oldElement = document.querySelector("#body");
+  const newElement: Element = oldElement?.cloneNode(true) as Element;
+  newElement && oldElement?.parentNode?.replaceChild(newElement, oldElement);
+  newElement?.replaceChildren();
 };
 
 const initTodo = (todo: string) => {
@@ -52,13 +59,12 @@ const initTodo = (todo: string) => {
   if (!selectedTodo) {
     return;
   }
-  const [init, cleanup] = selectedTodo;
+  const [init] = selectedTodo;
 
-  cleanup();
   init();
   menu?.classList.add("hidden");
   back?.classList.remove("hidden");
 };
 
 appEl.addEventListener("click", onMenuClick);
-back?.addEventListener("click", backToMenu);
+back?.addEventListener("click", backToMenu as EventListener);

@@ -1,6 +1,9 @@
 import "./style.css";
 
-const listeners = [];
+const listeners: [
+  evType: keyof HTMLElementEventMap,
+  listener: (ev: any) => void
+][] = [];
 
 const appEl: HTMLDivElement = document.getElementById("app") as HTMLDivElement;
 
@@ -24,6 +27,7 @@ const appendTodo = (todo: string) => {
   todoListEl.append(liEl);
   addCheckButton(liEl, actionsEl);
   addDeleteButton(liEl, actionsEl);
+  addUpdate(liEl);
 };
 
 const addCheckButton = (liEl: HTMLLIElement, actionsEl: HTMLDivElement) => {
@@ -36,7 +40,7 @@ const addCheckButton = (liEl: HTMLLIElement, actionsEl: HTMLDivElement) => {
     liEl.classList.toggle("line-through");
   };
 
-  listeners.push(onCheck);
+  listeners.push(["click", onCheck]);
   checkBtn.addEventListener("click", onCheck);
 };
 
@@ -51,8 +55,41 @@ const addDeleteButton = (liEl: HTMLLIElement, actionsEl: HTMLDivElement) => {
     liEl.remove();
   };
 
-  listeners.push(onDelete);
+  listeners.push(["click", onDelete]);
   checkBtn.addEventListener("click", onDelete);
+};
+
+const addUpdate = (liEl: HTMLLIElement) => {
+  const updateInput: HTMLInputElement = document.createElement("input");
+  updateInput.placeholder = "Update TODO";
+
+  const onUpdateText = (ev: KeyboardEvent) => {
+    ev.stopPropagation();
+
+    if (ev.key === "Enter") {
+      const newText = (ev.target as HTMLInputElement).value;
+      const [_input, ...actions] = liEl.childNodes;
+      liEl.replaceChildren(newText, ...actions);
+    }
+  };
+
+  const onClickUpdate = (ev: MouseEvent) => {
+    ev.stopPropagation();
+
+    if ((ev.target as HTMLLIElement).nodeName === "INPUT") {
+      return;
+    }
+
+    const [text, ...actions] = liEl.childNodes;
+    updateInput.value = text.textContent as string;
+    liEl.replaceChildren(updateInput, ...actions);
+  };
+
+  listeners.push(["click", onClickUpdate]);
+  listeners.push(["keydown", onUpdateText]);
+
+  liEl.addEventListener("click", onClickUpdate);
+  updateInput.addEventListener("keydown", onUpdateText);
 };
 
 const todoAddListener = (ev: KeyboardEvent) => {
@@ -62,6 +99,7 @@ const todoAddListener = (ev: KeyboardEvent) => {
   }
 };
 
+listeners.push(["keydown", todoAddListener]);
 todoInputEl.addEventListener("keydown", todoAddListener);
 
 appEl.append(todoInputEl, todoListEl);

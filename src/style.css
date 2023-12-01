@@ -123,3 +123,12 @@ li:hover {
 .actions > *:not(:first-child) {
   margin-left: 0.5rem;
 }
+
+.back {
+  display: flex;
+  margin-bottom: 2rem;
+}
+
+.hidden {
+  display: none;
+}

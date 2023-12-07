@@ -129,12 +129,13 @@ li:hover {
   margin-bottom: 2rem;
 }
 
-.hidden {
-  display: none;
-}
-
 .menu {
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
+}
+
+/* utilities */
+.hidden {
+  display: none;
 }

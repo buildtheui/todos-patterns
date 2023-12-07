@@ -19,8 +19,8 @@ const MenuHTML = `
                   .map((todo) => {
                     // Create a link for each todo type
                     return `<a href="#" data-todo="${todo}" style="text-decoration:underline;">
-                                        ${todo.toUpperCase()} TODO
-                                </a>`;
+                                ${todo.toUpperCase()} TODO
+                             </a>`;
                   })
                   .join("\n")}
         </div>

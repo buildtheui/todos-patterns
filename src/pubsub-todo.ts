@@ -6,6 +6,8 @@ import { createTodoListEl } from "./elements/todo-list-container";
 
 const EVENTS = {
   addTodo: "add-todo",
+  checkTodo: "check-todo",
+  deleteTodo: "delete-todo",
   addCheckAction: "add-check-action",
   addDeleteAction: "add-delete-action",
   addUpdateAction: "add-update-action",
@@ -17,8 +19,8 @@ type PartialRecord<K extends EventsValues, T> = {
   [P in K]?: T;
 };
 
-type DataActions = [todoItemEl: HTMLElement, actionEl?: HTMLElement];
-type Data = string | DataActions;
+type DataActions = [target: HTMLElement];
+type Data = string | DataActions | KeyboardEvent | MouseEvent;
 
 type PubSub<DT extends Data> = {
   events: PartialRecord<EventsValues, ((data: DT) => void)[]>;
@@ -64,39 +66,53 @@ export const init = () => {
     todoItemEl.append(actionsEl);
     todoListEl.append(todoItemEl);
     // Add the check and delete buttons to the todo item
-    pubSub.publish(EVENTS.addCheckAction, [todoItemEl, actionsEl]);
-    pubSub.publish(EVENTS.addDeleteAction, [todoItemEl, actionsEl]);
+    pubSub.publish(EVENTS.addCheckAction, [actionsEl]);
+    pubSub.publish(EVENTS.addDeleteAction, [actionsEl]);
     // Add the update functionality to the todo item
     pubSub.publish(EVENTS.addUpdateAction, [todoItemEl]);
   });
 
   // Subscribe to add check action
   pubSub.subscribe(EVENTS.addCheckAction, (data: Data) => {
-    const [todoItemEl, actionsEl] = data as DataActions;
+    const [actionsEl] = data as DataActions;
     // Create a button for checking off a todo item
     const checkBtn = createButton("✔");
     actionsEl?.append(checkBtn);
 
     // Add an event listener to the check button to toggle the line-through class
-    checkBtn.addEventListener("click", (ev: MouseEvent) => {
-      ev.stopPropagation();
-      todoItemEl.classList.toggle("line-through");
-    });
+    checkBtn.addEventListener(
+      "click",
+      pubSub.publish.bind(pubSub, EVENTS.checkTodo)
+    );
+  });
+
+  // strike through the todo
+  pubSub.subscribe(EVENTS.checkTodo, (ev: Data) => {
+    (ev as MouseEvent).stopPropagation();
+    const todoCheckBtn = (ev as MouseEvent).target as HTMLLIElement;
+    todoCheckBtn.parentElement?.parentElement?.classList.toggle("line-through");
   });
 
   // subscribe to add delete action
   pubSub.subscribe(EVENTS.addDeleteAction, (data: Data) => {
-    const [todoItemEl, actionsEl] = data as DataActions;
+    const [actionsEl] = data as DataActions;
     // Create a button for deleting a todo item
     const deleteBtn = createButton("x");
     deleteBtn.style.backgroundColor = "red";
     actionsEl?.append(deleteBtn);
 
     // Add an event listener to the delete button to remove the todo item
-    deleteBtn.addEventListener("click", (ev: MouseEvent) => {
-      ev.stopPropagation();
-      todoItemEl.remove();
-    });
+    deleteBtn.addEventListener(
+      "click",
+      pubSub.publish.bind(pubSub, EVENTS.deleteTodo)
+    );
+  });
+
+  // Remove todo
+  pubSub.subscribe(EVENTS.deleteTodo, (ev: Data) => {
+    (ev as MouseEvent).stopPropagation();
+    const todoRemoveBtn = (ev as MouseEvent).target as HTMLLIElement;
+    todoRemoveBtn.parentElement?.parentElement?.remove();
   });
 
   pubSub.subscribe(EVENTS.addUpdateAction, (data: Data) => {

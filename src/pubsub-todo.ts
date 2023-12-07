@@ -1,69 +1,104 @@
-import { createTodoInputEl } from "./elements/todo-input";
-import { createTodoListEl } from "./elements/todo-list-container";
-import { createActionsContainer } from "./elements/todo-actions-container";
 import { createButton } from "./elements/button";
 import { createListItem } from "./elements/list-item";
+import { createActionsContainer } from "./elements/todo-actions-container";
+import { createTodoInputEl } from "./elements/todo-input";
+import { createTodoListEl } from "./elements/todo-list-container";
 
-// This function initializes the todo list
+const EVENTS = {
+  addTodo: "add-todo",
+  addCheckAction: "add-check-action",
+  addDeleteAction: "add-delete-action",
+  addUpdateAction: "add-update-action",
+} as const;
+
+type EventsValues = (typeof EVENTS)[keyof typeof EVENTS];
+
+type PartialRecord<K extends EventsValues, T> = {
+  [P in K]?: T;
+};
+
+type DataActions = [todoItemEl: HTMLElement, actionEl?: HTMLElement];
+type Data = string | DataActions;
+
+type PubSub<DT extends Data> = {
+  events: PartialRecord<EventsValues, ((data: DT) => void)[]>;
+  publish(event: EventsValues, data: DT): void;
+  subscribe(event: EventsValues, cb: (data: DT) => void): void;
+  clear(): void;
+};
+
+const pubSub: PubSub<Data> = {
+  events: {},
+  publish(event, data) {
+    this.events[event]?.forEach((cb) => cb(data));
+  },
+  subscribe(event, callback) {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event]?.push(callback);
+  },
+  clear() {
+    this.events = {};
+  },
+};
+
 export const init = () => {
   const todoInputEl = createTodoInputEl();
   const todoListEl = createTodoListEl();
+
+  // clean up previous events
+  pubSub.clear();
 
   // Get the body element from the DOM
   const bodyEl = document.getElementById("body") as HTMLDivElement;
   // Append the todo input and the todo list to the body
   bodyEl.append(todoInputEl, todoListEl);
 
-  // This function appends a todo item to the todo list
-  const appendTodo = (todoText: string) => {
+  // Subsbribe to the add-todo
+  pubSub.subscribe(EVENTS.addTodo, (todoText: Data) => {
     // Create a li element for the todo item
-    const todoItemEl = createListItem(todoText);
+    const todoItemEl = createListItem(todoText as string);
     const actionsEl = createActionsContainer();
 
     todoItemEl.append(actionsEl);
     todoListEl.append(todoItemEl);
     // Add the check and delete buttons to the todo item
-    addCheckButton(todoItemEl, actionsEl);
-    addDeleteButton(todoItemEl, actionsEl);
+    pubSub.publish(EVENTS.addCheckAction, [todoItemEl, actionsEl]);
+    pubSub.publish(EVENTS.addDeleteAction, [todoItemEl, actionsEl]);
     // Add the update functionality to the todo item
-    addUpdate(todoItemEl);
-  };
+    //addUpdate(todoItemEl);
+  });
 
-  // This function adds a check button to a todo item
-  const addCheckButton = (
-    todoItemEl: HTMLLIElement,
-    actionsEl: HTMLDivElement
-  ) => {
+  pubSub.subscribe(EVENTS.addCheckAction, (data: Data) => {
+    const [todoItemEl, actionsEl] = data as DataActions;
     // Create a button for checking off a todo item
     const checkBtn = createButton("✔");
-    actionsEl.append(checkBtn);
+    actionsEl?.append(checkBtn);
 
     // Add an event listener to the check button to toggle the line-through class
     checkBtn.addEventListener("click", (ev: MouseEvent) => {
       ev.stopPropagation();
       todoItemEl.classList.toggle("line-through");
     });
-  };
+  });
 
-  // This function adds a delete button to a todo item
-  const addDeleteButton = (
-    todoItemEl: HTMLLIElement,
-    actionsEl: HTMLDivElement
-  ) => {
+  pubSub.subscribe(EVENTS.addDeleteAction, (data: Data) => {
+    const [todoItemEl, actionsEl] = data as DataActions;
     // Create a button for deleting a todo item
     const deleteBtn = createButton("x");
     deleteBtn.style.backgroundColor = "red";
-    actionsEl.append(deleteBtn);
+    actionsEl?.append(deleteBtn);
 
     // Add an event listener to the delete button to remove the todo item
     deleteBtn.addEventListener("click", (ev: MouseEvent) => {
       ev.stopPropagation();
       todoItemEl.remove();
     });
-  };
+  });
 
-  // This function adds the update functionality to a todo item
-  const addUpdate = (todoItemEl: HTMLLIElement) => {
+  pubSub.subscribe(EVENTS.addUpdateAction, (data: Data) => {
+    const [todoItemEl] = data as DataActions;
     // Create an input element for updating the todo item
     const updateInput: HTMLInputElement = document.createElement("input");
     updateInput.placeholder = "Update TODO";
@@ -92,12 +127,14 @@ export const init = () => {
       updateInput.value = text.textContent as string;
       todoItemEl.replaceChildren(updateInput, ...actions);
     });
-  };
+  });
 
   // Add an event listener to the todo input to append a new todo item when Enter is pressed
   todoInputEl.addEventListener("keydown", (ev: KeyboardEvent) => {
     if (ev.key === "Enter" && (ev.target as HTMLInputElement).value) {
-      appendTodo((ev.target as HTMLInputElement).value);
+      // Publish the todo data to be read by the subscriber/s
+      pubSub.publish(EVENTS.addTodo, (ev.target as HTMLInputElement).value);
+
       (ev.target as HTMLInputElement).value = "";
     }
   });

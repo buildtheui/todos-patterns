@@ -1,9 +1,11 @@
 import { init as basicInit } from "./basic-todo";
+import { init as pubSubInit } from "./pubsub-todo";
 import "./style.css";
 
 // Define a todos object with the basic todo init function
 const todos = {
   basic: basicInit,
+  pubSub: pubSubInit,
 };
 
 // Get the app element from the DOM
@@ -12,7 +14,7 @@ const appEl: HTMLDivElement = document.getElementById("app") as HTMLDivElement;
 // Define the HTML for the menu
 const MenuHTML = `
         <h1>TODOs patterns</h1>
-        <div id="menu">
+        <div id="menu" class="menu">
                 ${Object.keys(todos)
                   .map((todo) => {
                     // Create a link for each todo type
@@ -20,7 +22,7 @@ const MenuHTML = `
                                         ${todo.toUpperCase()} TODO
                                 </a>`;
                   })
-                  .join("")}
+                  .join("\n")}
         </div>
         <a href="#" id="back" class="back hidden">Back</a>
         <div id="body"></div>

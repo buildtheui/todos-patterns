@@ -132,3 +132,9 @@ li:hover {
 .hidden {
   display: none;
 }
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}

@@ -68,17 +68,6 @@ export const init = () => {
     const updateInput: HTMLInputElement = document.createElement("input");
     updateInput.placeholder = "Update TODO";
 
-    // Add an event listener to the update input to replace the text of the todo item
-    updateInput.addEventListener("keydown", (ev: KeyboardEvent) => {
-      ev.stopPropagation();
-
-      if (ev.key === "Enter") {
-        const newText = (ev.target as HTMLInputElement).value;
-        const [_input, ...actions] = todoItemEl.childNodes;
-        todoItemEl.replaceChildren(newText, ...actions);
-      }
-    });
-
     // Add an event listener to the todo item to replace the text with the update input
     todoItemEl.addEventListener("click", (ev: MouseEvent) => {
       ev.stopPropagation();
@@ -92,11 +81,22 @@ export const init = () => {
       updateInput.value = text.textContent as string;
       todoItemEl.replaceChildren(updateInput, ...actions);
     });
+
+    // Add an event listener to the update input to replace the text of the todo item
+    updateInput.addEventListener("keydown", (ev: KeyboardEvent) => {
+      ev.stopPropagation();
+
+      if (ev.key === "Enter" && (ev.target as HTMLInputElement).value !== "") {
+        const newText = (ev.target as HTMLInputElement).value;
+        const [_input, ...actions] = todoItemEl.childNodes;
+        todoItemEl.replaceChildren(newText, ...actions);
+      }
+    });
   };
 
   // Add an event listener to the todo input to append a new todo item when Enter is pressed
   todoInputEl.addEventListener("keydown", (ev: KeyboardEvent) => {
-    if (ev.key === "Enter" && (ev.target as HTMLInputElement).value) {
+    if (ev.key === "Enter" && (ev.target as HTMLInputElement).value !== "") {
       appendTodo((ev.target as HTMLInputElement).value);
       (ev.target as HTMLInputElement).value = "";
     }

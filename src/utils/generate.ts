@@ -8,3 +8,9 @@ export function toKey(str: string) {
     .toLowerCase()
     .substring(0, 10)}-${getRandomNumber(0, 4)}`;
 }
+
+export function camelCaseToSpace(str: string) {
+  return str
+    .replace(/([a-z])([A-Z])/g, "$1 $2") // Convert camelCase to space-separated
+    .toLowerCase(); // Convert to lowercase
+}

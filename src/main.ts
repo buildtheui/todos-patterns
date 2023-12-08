@@ -1,11 +1,14 @@
+import { camelCaseToSpace } from "./utils/generate";
 import { init as basicInit } from "./basic-todo";
 import { init as pubSubInit } from "./pubsub-todo";
+import { init as pubSubCustomInit } from "./pubsub-custom-todo";
 import "./style.css";
 
 // Define a todos object with the basic todo init function
 const todos = {
   basic: basicInit,
   pubSub: pubSubInit,
+  pubSubCustomEvent: pubSubCustomInit,
 };
 
 // Get the app element from the DOM
@@ -19,7 +22,7 @@ const MenuHTML = `
                   .map((todo) => {
                     // Create a link for each todo type
                     return `<a href="#" data-todo="${todo}" style="text-decoration:underline;">
-                                ${todo.toUpperCase()} TODO
+                                ${camelCaseToSpace(todo)} TODO
                              </a>`;
                   })
                   .join("\n")}

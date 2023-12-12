@@ -2,6 +2,7 @@ import { camelCaseToSpace } from "./utils/generate";
 import { init as basicInit } from "./basic-todo";
 import { init as pubSubInit } from "./pubsub-todo";
 import { init as pubSubCustomInit } from "./pubsub-custom-todo";
+import { init as pubSubEventTargetInit } from "./pubsub-event-target-todo";
 import "./style.css";
 
 // Define a todos object with the basic todo init function
@@ -9,6 +10,7 @@ const todos = {
   basic: basicInit,
   pubSub: pubSubInit,
   pubSubCustomEvent: pubSubCustomInit,
+  pubSubEventTarget: pubSubEventTargetInit,
 };
 
 // Get the app element from the DOM

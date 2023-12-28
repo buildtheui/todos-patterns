@@ -3,6 +3,7 @@ import { init as basicInit } from "./basic-todo";
 import { init as pubSubInit } from "./pubsub-todo";
 import { init as pubSubCustomInit } from "./pubsub-custom-todo";
 import { init as pubSubEventTargetInit } from "./pubsub-event-target-todo";
+import { init as observerTodoInit } from "./observer-todo";
 import "./style.css";
 
 // Define a todos object with the basic todo init function
@@ -11,6 +12,7 @@ const todos = {
   pubSub: pubSubInit,
   pubSubCustomEvent: pubSubCustomInit,
   pubSubEventTarget: pubSubEventTargetInit,
+  observer: observerTodoInit,
 };
 
 // Get the app element from the DOM
